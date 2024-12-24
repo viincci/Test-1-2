@@ -28,12 +28,18 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: relative;
+            height: 700px;
         }
 
         .header {
             padding: 15px;
             text-align: center;
             border-bottom: 1px solid #eee;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
@@ -120,29 +126,83 @@
             border: 2px solid #1be4a1;
         }
 
-        .swipe-info {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 24px;
+        .nav-bar {
+            position: fixed;
+            bottom: 20px;
+            width: calc(100% - 40px);
+            max-width: 355px;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 5px 15px;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item.active {
+            background-color: #fe3c72;
+            color: white;
+        }
+
+        .page {
+            display: none;
+            height: calc(100% - 140px);
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .chat-item, .notification-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .chat-item:hover, .notification-item:hover {
+            background-color: #f8f8f8;
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .chat-content, .notification-content {
+            flex: 1;
+        }
+
+        .chat-name, .notification-title {
             font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
+            margin-bottom: 5px;
         }
 
-        .like-info {
-            color: #1be4a1;
-            border: 2px solid #1be4a1;
-            background: rgba(27, 228, 161, 0.2);
+        .chat-message, .notification-text {
+            color: #666;
+            font-size: 14px;
         }
 
-        .dislike-info {
-            color: #fd5068;
-            border: 2px solid #fd5068;
-            background: rgba(253, 80, 104, 0.2);
+        .settings-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .settings-item:hover {
+            background-color: #f8f8f8;
         }
     </style>
 </head>
@@ -151,17 +211,97 @@
         <div class="header">
             <div class="logo">Tinder Clone</div>
         </div>
-        <div class="card-container">
-            <div class="swipe-info like-info">LIKE</div>
-            <div class="swipe-info dislike-info">NOPE</div>
+
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="card-container">
+                <div class="swipe-info like-info">LIKE</div>
+                <div class="swipe-info dislike-info">NOPE</div>
+            </div>
+            <div class="buttons">
+                <button class="button dislike">✕</button>
+                <button class="button like">♥</button>
+            </div>
         </div>
-        <div class="buttons">
-            <button class="button dislike">✕</button>
-            <button class="button like">♥</button>
+
+        <!-- Chat Page -->
+        <div id="chat" class="page">
+            <div class="chat-item">
+                <img src="/api/placeholder/50/50" class="profile-pic" alt="Sarah">
+                <div class="chat-content">
+                    <div class="chat-name">Sarah Johnson</div>
+                    <div class="chat-message">Hey, how's it going? 👋</div>
+                </div>
+            </div>
+            <div class="chat-item">
+                <img src="/api/placeholder/50/50" class="profile-pic" alt="Mike">
+                <div class="chat-content">
+                    <div class="chat-name">Mike Wilson</div>
+                    <div class="chat-message">What's your favorite coffee place?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Page -->
+        <div id="notifications" class="page">
+            <div class="notification-item">
+                <img src="/api/placeholder/50/50" class="profile-pic" alt="New Match">
+                <div class="notification-content">
+                    <div class="notification-title">New Match!</div>
+                    <div class="notification-text">You and Emily matched</div>
+                </div>
+            </div>
+            <div class="notification-item">
+                <img src="/api/placeholder/50/50" class="profile-pic" alt="Like">
+                <div class="notification-content">
+                    <div class="notification-title">New Like</div>
+                    <div class="notification-text">Someone liked your profile</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <div class="settings-item">Edit Profile</div>
+            <div class="settings-item">Discovery Settings</div>
+            <div class="settings-item">Notifications Settings</div>
+            <div class="settings-item">Privacy Policy</div>
+            <div class="settings-item">Logout</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-item active" data-page="home">🏠</div>
+            <div class="nav-item" data-page="chat">💬</div>
+            <div class="nav-item" data-page="notifications">🔔</div>
+            <div class="nav-item" data-page="settings">⚙️</div>
         </div>
     </div>
 
     <script>
+        // ... (Previous card swiping code remains the same)
+
+        // Navigation functionality
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Update active nav item
+                navItems.forEach(navItem => navItem.classList.remove('active'));
+                item.classList.add('active');
+
+                // Show active page
+                const pageId = item.getAttribute('data-page');
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                    if (page.id === pageId) {
+                        page.classList.add('active');
+                    }
+                });
+            });
+        });
+
         const profiles = [
             {
                 name: 'Sarah Johnson',
@@ -314,4 +454,4 @@
         showNextProfile();
     </script>
 </body>
-</html>
+    </html>
