@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tinder Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 375px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            color: #fe3c72;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .card-container {
+            position: relative;
+            height: 500px;
+            padding: 10px;
+        }
+
+        .card {
+            position: absolute;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: transform 0.3s;
+        }
+
+        .card img {
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .card-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-bio {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: scale(1.1);
+        }
+
+        .dislike {
+            background-color: #fff;
+            color: #fd5068;
+            border: 2px solid #fd5068;
+        }
+
+        .like {
+            background-color: #fff;
+            color: #1be4a1;
+            border: 2px solid #1be4a1;
+        }
+
+        .swipe-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .like-info {
+            color: #1be4a1;
+            border: 2px solid #1be4a1;
+            background: rgba(27, 228, 161, 0.2);
+        }
+
+        .dislike-info {
+            color: #fd5068;
+            border: 2px solid #fd5068;
+            background: rgba(253, 80, 104, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">Tinder Clone</div>
+        </div>
+        <div class="card-container">
+            <div class="swipe-info like-info">LIKE</div>
+            <div class="swipe-info dislike-info">NOPE</div>
+        </div>
+        <div class="buttons">
+            <button class="button dislike">✕</button>
+            <button class="button like">♥</button>
+        </div>
+    </div>
+
+    <script>
+        const profiles = [
+            {
+                name: 'Sarah Johnson',
+                age: 28,
+                bio: 'Adventure seeker and coffee enthusiast',
+                image: '/api/placeholder/355/375'
+            },
+            {
+                name: 'Mike Wilson',
+                age: 31,
+                bio: 'Photography and hiking are my passion',
+                image: '/api/placeholder/355/375'
+            },
+            {
+                name: 'Emily Davis',
+                age: 26,
+                bio: 'Foodie and travel lover',
+                image: '/api/placeholder/355/375'
+            }
+        ];
+
+        let currentProfileIndex = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        const cardContainer = document.querySelector('.card-container');
+        const likeInfo = document.querySelector('.like-info');
+        const dislikeInfo = document.querySelector('.dislike-info');
+
+        function createCard(profile) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${profile.image}" alt="${profile.name}">
+                <div class="card-content">
+                    <div class="card-name">${profile.name}, ${profile.age}</div>
+                    <div class="card-bio">${profile.bio}</div>
+                </div>
+            `;
+            return card;
+        }
+
+        function showNextProfile() {
+            if (currentProfileIndex < profiles.length) {
+                const card = createCard(profiles[currentProfileIndex]);
+                cardContainer.appendChild(card);
+                initializeDragListeners(card);
+            }
+        }
+
+        function initializeDragListeners(card) {
+            card.addEventListener('mousedown', startDragging);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDragging);
+
+            card.addEventListener('touchstart', startDragging);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('touchend', stopDragging);
+        }
+
+        function startDragging(e) {
+            isDragging = true;
+            startX = (e.type === 'mousedown') ? e.clientX : e.touches[0].clientX;
+            this.style.transition = 'none';
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+
+            e.preventDefault();
+            currentX = (e.type === 'mousemove') ? e.clientX : e.touches[0].clientX;
+            const moveX = currentX - startX;
+            const card = cardContainer.querySelector('.card');
+            
+            if (card) {
+                card.style.transform = `translateX(${moveX}px) rotate(${moveX * 0.1}deg)`;
+                updateSwipeInfo(moveX);
+            }
+        }
+
+        function stopDragging() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const card = cardContainer.querySelector('.card');
+            if (!card) return;
+
+            const moveX = currentX - startX;
+            const threshold = 100;
+
+            if (Math.abs(moveX) >= threshold) {
+                const direction = moveX > 0 ? 1 : -1;
+                card.style.transition = 'transform 0.3s';
+                card.style.transform = `translateX(${direction * window.innerWidth}px) rotate(${90 * direction}deg)`;
+                
+                setTimeout(() => {
+                    card.remove();
+                    currentProfileIndex++;
+                    showNextProfile();
+                }, 300);
+            } else {
+                card.style.transition = 'transform 0.3s';
+                card.style.transform = 'translateX(0) rotate(0)';
+            }
+
+            likeInfo.style.opacity = '0';
+            dislikeInfo.style.opacity = '0';
+        }
+
+        function updateSwipeInfo(moveX) {
+            if (moveX > 50) {
+                likeInfo.style.opacity = '1';
+                dislikeInfo.style.opacity = '0';
+            } else if (moveX < -50) {
+                likeInfo.style.opacity = '0';
+                dislikeInfo.style.opacity = '1';
+            } else {
+                likeInfo.style.opacity = '0';
+                dislikeInfo.style.opacity = '0';
+            }
+        }
+
+        // Initialize buttons
+        document.querySelector('.like').addEventListener('click', () => {
+            const card = cardContainer.querySelector('.card');
+            if (card) {
+                card.style.transform = 'translateX(1000px) rotate(90deg)';
+                setTimeout(() => {
+                    card.remove();
+                    currentProfileIndex++;
+                    showNextProfile();
+                }, 300);
+            }
+        });
+
+        document.querySelector('.dislike').addEventListener('click', () => {
+            const card = cardContainer.querySelector('.card');
+            if (card) {
+                card.style.transform = 'translateX(-1000px) rotate(-90deg)';
+                setTimeout(() => {
+                    card.remove();
+                    currentProfileIndex++;
+                    showNextProfile();
+                }, 300);
+            }
+        });
+
+        // Show first profile
+        showNextProfile();
+    </script>
+</body>
+</html>
